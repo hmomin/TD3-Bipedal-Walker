@@ -41,7 +41,7 @@ After training the agent overnight on a GPU, it could gracefully complete the ch
 Below, the performance of the agent over 10 trial runs is documented. The black line indicates a 100-period moving average over all trials while the shaded region is one standard deviation above and below the average.
 
 <p align="center">
-    <img src="https://dr3ngl797z54v.cloudfront.net/bipedal-walker-10-trial-average.png" width="80%" alt="training-results">
+    <img src="https://dr3ngl797z54v.cloudfront.net/bipedal-walker-10-trial-avg.png" width="80%" alt="training-results">
 </p>
 
 # References
