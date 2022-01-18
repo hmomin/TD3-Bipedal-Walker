@@ -46,7 +46,7 @@ Below, the performance of the agent over 10 trial runs is documented. The black 
 
 # References
 
-- [Continuous Control With Deep Reinforcement Learning - Timothy P. Lillicrap et al.](https://arxiv.org/abs/1509.02971)
+- [Continuous Control With Deep Reinforcement Learning - Lillicrap et al.](https://arxiv.org/abs/1509.02971)
 - [Addressing Function Approximation Error in Actor-Critic Methods - Fujimoto et al.](https://arxiv.org/abs/1802.09477)
 
 # License
