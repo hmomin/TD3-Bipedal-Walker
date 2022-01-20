@@ -23,24 +23,28 @@ class Agent():
             os.mkdir(saveFolder)
         self.envName = os.path.join(saveFolder, env.name + '.')
         name = self.envName
+        self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
         # initialize the actor and critics
         self.actor = pickle.load(open(name + 'Actor', 'rb'))\
             if shouldLoad and os.path.exists(name + 'Actor') else Network(
                 [self.observationDim, 256, 256, self.actionDim],
                 nn.Tanh,
-                learningRate
+                learningRate,
+                self.device
             )
         self.critic1 = pickle.load(open(name + 'Critic1', 'rb'))\
             if shouldLoad and os.path.exists(name + 'Critic1') else Network(
                 [self.observationDim + self.actionDim, 256, 256, 1],
                 nn.Identity,
-                learningRate
+                learningRate,
+                self.device
             )
         self.critic2 = pickle.load(open(name + 'Critic2', 'rb'))\
             if shouldLoad and os.path.exists(name + 'Critic2') else Network(
                 [self.observationDim + self.actionDim, 256, 256, 1],
                 nn.Identity,
-                learningRate
+                learningRate,
+                self.device
             )
         # create target networks
         self.targetActor = pickle.load(open(name + 'TargetActor', 'rb'))\
@@ -59,7 +63,7 @@ class Agent():
         return np.clip(deterministicAction + noise, -1, +1)
     
     def getDeterministicAction(self, state: np.ndarray) -> np.ndarray:
-        actions: T.Tensor = self.actor.forward(T.tensor(state).cuda())
+        actions: T.Tensor = self.actor.forward(T.tensor(state, device=self.device))
         return actions.cpu().detach().numpy()
     
     def update(
@@ -69,11 +73,13 @@ class Agent():
         # randomly sample a mini-batch from the replay buffer
         miniBatch = self.buffer.getMiniBatch(miniBatchSize)
         # create tensors to start generating computational graph
-        states = T.tensor(miniBatch["states"], requires_grad=True).cuda()
-        actions = T.tensor(miniBatch["actions"], requires_grad=True).cuda()
-        rewards = T.tensor(miniBatch["rewards"], requires_grad=True).cuda()
-        nextStates = T.tensor(miniBatch["nextStates"], requires_grad=True).cuda()
-        dones = T.tensor(miniBatch["doneFlags"], requires_grad=True).cuda()
+        states = T.tensor(miniBatch["states"], requires_grad=True, device=self.device)
+        actions = T.tensor(miniBatch["actions"], requires_grad=True, device=self.device)
+        rewards = T.tensor(miniBatch["rewards"], requires_grad=True, device=self.device)
+        nextStates = T.tensor(
+            miniBatch["nextStates"], requires_grad=True, device=self.device
+        )
+        dones = T.tensor(miniBatch["doneFlags"], requires_grad=True, device=self.device)
         # compute the targets
         targets = self.computeTargets(
             rewards, nextStates, dones, trainingSigma, trainingClip
@@ -99,7 +105,9 @@ class Agent():
         targetActions = self.targetActor.forward(nextStates.float())
         # create additive noise for target actions
         noise = np.random.normal(0, trainingSigma, targetActions.shape)
-        clippedNoise = T.tensor(np.clip(noise, -trainingClip, +trainingClip)).cuda()
+        clippedNoise = T.tensor(
+            np.clip(noise, -trainingClip, +trainingClip), device=self.device
+        )
         targetActions = T.clip(targetActions + clippedNoise, -1, +1)
         # compute targets
         targetQ1Values = T.squeeze(

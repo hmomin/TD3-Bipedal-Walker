@@ -5,7 +5,8 @@ import torch.optim as optim
 
 class Network(nn.Module):
     def __init__(
-        self, shape: list, outputActivation: Callable, learningRate: float
+        self, shape: list, outputActivation: Callable, learningRate: float,
+        device: T.device
     ):
         super().__init__()
         # initialize the network
@@ -17,10 +18,10 @@ class Network(nn.Module):
             if i < len(shape) - 1:
                 layers.append(nn.ReLU())
         layers.append(outputActivation())
-        self.network = nn.Sequential(*layers).cuda()
+        self.network = nn.Sequential(*layers)
         
         self.optimizer = optim.Adam(self.parameters(), lr=learningRate)
-        self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
+        self.device = device
         self.to(self.device)
     
     def forward(self, state: object) -> object:
