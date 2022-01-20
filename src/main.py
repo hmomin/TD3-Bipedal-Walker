@@ -12,7 +12,7 @@ trainingSigma = 0.2  # contributes noise to target actions
 trainingClip = 0.5   # clips target actions to keep them close to the true actions
 miniBatchSize = 100  # how large a mini-batch should be when updating
 policyDelay = 2      # how many steps to wait before updating the policy
-saveDelay = 10000    # how many steps to wait before saving the agent
+saveDelay = 10000    # how many steps to wait before saving the agent networks
 resume = True        # resume from previous checkpoint if possible?
 render = True        # render out the game on-screen?
 
@@ -45,7 +45,7 @@ while True:
                 env.render()
             state = nextState
             sumRewards += reward
-        # keep a running average to show how well we're doing
+        # keep a running average to see how well we're doing
         runningReward = sumRewards\
             if runningReward is None\
             else runningReward*0.99 + sumRewards*0.01
@@ -55,7 +55,7 @@ while True:
         )
         # log progress in csv file
         fields = [numEpisode, sumRewards, runningReward]
-        with open(envName + '-data.csv', 'a', newline='') as f:
+        with open(env.name + '-data.csv', 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
         state = env.reset()
