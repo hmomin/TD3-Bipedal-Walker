@@ -57,6 +57,9 @@ class Agent():
             if shouldLoad and os.path.exists(name + 'TargetCritic2') else\
             deepcopy(self.critic2)
     
+    def getExploratoryAction(self) -> np.ndarray:
+        return np.random.uniform(-1, +1, (self.actionDim))
+    
     def getNoisyAction(self, state: np.ndarray, sigma: float) -> np.ndarray:
         deterministicAction = self.getDeterministicAction(state)
         noise = np.random.normal(0, sigma, deterministicAction.shape)

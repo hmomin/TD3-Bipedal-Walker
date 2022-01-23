@@ -4,17 +4,18 @@ from Agent import Agent
 
 envName = "BipedalWalker-v3"
 # HYPERPARAMETERS BELOW
-gamma = 0.99         # discount factor for rewards
-learningRate = 1e-3  # learning rate for actor and critic networks
-tau = 0.005          # tracking parameter used to update target networks slowly
-actionSigma = 0.1    # contributes noise to deterministic policy output
-trainingSigma = 0.2  # contributes noise to target actions
-trainingClip = 0.5   # clips target actions to keep them close to the true actions
-miniBatchSize = 100  # how large a mini-batch should be when updating
-policyDelay = 2      # how many steps to wait before updating the policy
-saveDelay = 10000    # how many steps to wait before saving the agent networks
-resume = True        # resume from previous checkpoint if possible?
-render = True        # render out the game on-screen?
+gamma = 0.99              # discount factor for rewards
+learningRate = 1e-3       # learning rate for actor and critic networks
+tau = 0.005               # tracking parameter used to update target networks slowly
+actionSigma = 0.1         # contributes noise to deterministic policy output
+trainingSigma = 0.2       # contributes noise to target actions
+trainingClip = 0.5        # clips target actions to keep them close to the true actions
+exploratorySteps = 10000  # how many steps to "explore" for before using policy
+miniBatchSize = 100       # how large a mini-batch should be when updating
+policyDelay = 2           # how many steps to wait before updating the policy
+saveDelay = 10000         # how many steps to wait before saving the agent networks
+resume = True             # resume from previous checkpoint if possible?
+render = True             # render out the game on-screen?
 
 env = gym.make(envName)
 env.name = envName
@@ -25,8 +26,10 @@ step = 0
 runningReward = None
 
 while True:
-    # choose an action from the agent's policy
-    action = agent.getNoisyAction(state, actionSigma)
+    # either choose a completely random action or one from the agent's policy
+    action = agent.getExploratoryAction() if step < exploratorySteps\
+        else agent.getNoisyAction(state, actionSigma)
+    
     # take a step in the environment and collect information
     nextState, reward, done, info = env.step(action)
     # store data in buffer
@@ -41,7 +44,7 @@ while True:
         while not done:
             action = agent.getDeterministicAction(state)
             nextState, reward, done, info = env.step(action)
-            if render:
+            if render and step > exploratorySteps:
                 env.render()
             state = nextState
             sumRewards += reward
@@ -63,7 +66,10 @@ while True:
         state = nextState
     step += 1
     
-    shouldUpdatePolicy = step % policyDelay == 0
-    agent.update(miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy)
-    if step % saveDelay == 0:
-        agent.save()
+    if step == exploratorySteps:
+        print("Now training agent...")
+    elif step > exploratorySteps:
+        shouldUpdatePolicy = step % policyDelay == 0
+        agent.update(miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy)
+        if step % saveDelay == 0:
+            agent.save()
