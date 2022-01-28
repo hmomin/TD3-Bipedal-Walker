@@ -17,13 +17,16 @@ class Agent():
         self.actionDim = env.action_space.shape[0]
         self.gamma = gamma
         self.tau = tau
-        self.buffer = Buffer(self.observationDim, self.actionDim)
         # check if the saveFolder path exists
         if not os.path.isdir(saveFolder):
             os.mkdir(saveFolder)
         self.envName = os.path.join(saveFolder, env.name + '.')
         name = self.envName
         self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
+        self.buffer = pickle.load(open(name + 'Replay', 'rb'))\
+            if shouldLoad and os.path.exists(name + 'Replay') else Buffer(
+                self.observationDim, self.actionDim
+            )
         # initialize the actor and critics
         self.actor = pickle.load(open(name + 'Actor', 'rb'))\
             if shouldLoad and os.path.exists(name + 'Actor') else Network(
@@ -56,9 +59,6 @@ class Agent():
         self.targetCritic2 = pickle.load(open(name + 'TargetCritic2', 'rb'))\
             if shouldLoad and os.path.exists(name + 'TargetCritic2') else\
             deepcopy(self.critic2)
-    
-    def getExploratoryAction(self) -> np.ndarray:
-        return np.random.uniform(-1, +1, (self.actionDim))
     
     def getNoisyAction(self, state: np.ndarray, sigma: float) -> np.ndarray:
         deterministicAction = self.getDeterministicAction(state)
@@ -144,6 +144,7 @@ class Agent():
 
     def save(self):
         name = self.envName
+        pickle.dump(self.buffer, open(name + 'Replay', 'wb'))
         pickle.dump(self.actor, open(name + 'Actor', 'wb'))
         pickle.dump(self.critic1, open(name + 'Critic1', 'wb'))
         pickle.dump(self.critic2, open(name + 'Critic2', 'wb'))

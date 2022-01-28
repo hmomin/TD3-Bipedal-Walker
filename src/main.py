@@ -1,35 +1,41 @@
 import csv
 import gym
 from Agent import Agent
+from datetime import datetime
+from os import path
+
+# HYPERPARAMETERS BELOW
+gamma = 0.99         # discount factor for rewards
+learningRate = 3e-4  # learning rate for actor and critic networks
+tau = 0.005          # tracking parameter used to update target networks slowly
+actionSigma = 0.1    # contributes noise to deterministic policy output
+trainingSigma = 0.2  # contributes noise to target actions
+trainingClip = 0.5   # clips target actions to keep them close to the true actions
+miniBatchSize = 100  # how large a mini-batch should be when updating
+policyDelay = 2      # how many steps to wait before updating the policy
+resume = True        # resume from previous checkpoint if possible?
+render = True        # render out the game on-screen?
 
 envName = "BipedalWalker-v3"
-# HYPERPARAMETERS BELOW
-gamma = 0.99              # discount factor for rewards
-learningRate = 1e-3       # learning rate for actor and critic networks
-tau = 0.005               # tracking parameter used to update target networks slowly
-actionSigma = 0.1         # contributes noise to deterministic policy output
-trainingSigma = 0.2       # contributes noise to target actions
-trainingClip = 0.5        # clips target actions to keep them close to the true actions
-exploratorySteps = 10000  # how many steps to "explore" for before using policy
-miniBatchSize = 100       # how large a mini-batch should be when updating
-policyDelay = 2           # how many steps to wait before updating the policy
-saveDelay = 10000         # how many steps to wait before saving the agent networks
-resume = True             # resume from previous checkpoint if possible?
-render = True             # render out the game on-screen?
-
 env = gym.make(envName)
 env.name = envName
+csvName = env.name + '-data.csv'
 agent = Agent(env, learningRate, gamma, tau, resume)
 state = env.reset()
-numEpisode = 0
 step = 0
 runningReward = None
 
-while True:
-    # either choose a completely random action or one from the agent's policy
-    action = agent.getExploratoryAction() if step < exploratorySteps\
-        else agent.getNoisyAction(state, actionSigma)
-    
+# determine the last episode if we have saved training in progress
+numEpisode = 0
+if path.exists(csvName):
+    fileData = list(csv.reader(open(csvName)))
+    lastLine = fileData[-1]
+    lastEpisode = int(lastLine[0])
+    numEpisode = lastEpisode + 1
+
+while numEpisode <= 2000:
+    # choose an action from the agent's policy
+    action = agent.getNoisyAction(state, actionSigma)
     # take a step in the environment and collect information
     nextState, reward, done, info = env.step(action)
     # store data in buffer
@@ -44,7 +50,7 @@ while True:
         while not done:
             action = agent.getDeterministicAction(state)
             nextState, reward, done, info = env.step(action)
-            if render and step > exploratorySteps:
+            if render:
                 env.render()
             state = nextState
             sumRewards += reward
@@ -62,14 +68,12 @@ while True:
             writer = csv.writer(f)
             writer.writerow(fields)
         state = env.reset()
+        agent.save()
     else:
         state = nextState
     step += 1
     
-    if step == exploratorySteps:
-        print("Now training agent...")
-    elif step > exploratorySteps:
-        shouldUpdatePolicy = step % policyDelay == 0
-        agent.update(miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy)
-        if step % saveDelay == 0:
-            agent.save()
+    shouldUpdatePolicy = step % policyDelay == 0
+    agent.update(miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy)
+
+print(f"Finished at {str(datetime.now())}")

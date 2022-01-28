@@ -1,7 +1,7 @@
 import numpy as np
 
 class Buffer():
-    def __init__(self, observationDim: int, actionDim: int, size: int=1000000):
+    def __init__(self, observationDim: int, actionDim: int, size: int=1_000_000):
         # use a fixed-size buffer to prevent constant list instantiations
         self.states = np.zeros((size, observationDim))
         self.actions = np.zeros((size, actionDim))
