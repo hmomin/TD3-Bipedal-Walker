@@ -11,7 +11,7 @@ from Network import Network
 class Agent():
     def __init__(
         self, env: Env, learningRate: float, gamma: float, tau: float,
-        shouldLoad: bool=True, saveFolder: str='networks'
+        shouldLoad: bool=True, saveFolder: str='saved'
     ):
         self.observationDim = env.observation_space.shape[0]
         self.actionDim = env.action_space.shape[0]
