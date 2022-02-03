@@ -9,7 +9,7 @@ learningRate = 3e-4  # learning rate for actor and critic networks
 tau = 0.005          # tracking parameter used to update target networks slowly
 actionSigma = 0.1    # contributes noise to deterministic policy output
 trainingSigma = 0.2  # contributes noise to target actions
-trainingClip = 0.5   # clips target actions to keep them close to the true actions
+trainingClip = 0.5   # clips target actions to keep them close to true actions
 miniBatchSize = 100  # how large a mini-batch should be when updating
 policyDelay = 2      # how many steps to wait before updating the policy
 resume = True        # resume from previous checkpoint if possible?
@@ -17,7 +17,7 @@ render = False       # render out the environment on-screen?
 
 envName = "BipedalWalker-v3"
 
-for trial in range(12):
+for trial in range(20):
     env = gym.make(envName)
     env.name = envName + "_" + str(trial)
     csvName = env.name + '-data.csv'
@@ -31,8 +31,7 @@ for trial in range(12):
     if path.exists(csvName):
         fileData = list(csv.reader(open(csvName)))
         lastLine = fileData[-1]
-        lastEpisode = int(lastLine[0])
-        numEpisode = lastEpisode + 1
+        numEpisode = int(lastLine[0])
 
     while numEpisode <= 2000:
         # choose an action from the agent's policy
@@ -68,11 +67,16 @@ for trial in range(12):
             agent.save()
             # print episode tracking
             print(
-                f"episode {numEpisode:6d} --- total reward: {sumRewards:7.2f} --- running average: {runningReward:7.2f}"
+                f"episode {numEpisode:6d} --- " +
+                f"total reward: {sumRewards:7.2f} --- " +
+                f"running average: {runningReward:7.2f}",
+                flush=True
             )
         else:
             state = nextState
         step += 1
         
         shouldUpdatePolicy = step % policyDelay == 0
-        agent.update(miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy)
+        agent.update(
+            miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy
+        )
