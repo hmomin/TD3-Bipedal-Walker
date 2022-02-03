@@ -38,10 +38,10 @@ After training the agent overnight on a GPU, it could gracefully complete the ch
     <img src="https://dr3ngl797z54v.cloudfront.net/bipedal-walker-success.gif" width="80%" alt="success!">
 </p>
 
-Below, the performance of the agent over 12 trial runs is documented. The shaded region represents a standard deviation of the average evaluation over all trials. The curve has been smoothed with a Savitzky-Golay filter for visual clarity.
+Below, the performance of the agent over 20 trial runs is documented. The shaded region represents a standard deviation of the average evaluation over all trials.
 
 <p align="center">
-    <img src="https://dr3ngl797z54v.cloudfront.net/bipedal-walker-12-trial-avg.png" width="80%" alt="training-results">
+    <img src="https://dr3ngl797z54v.cloudfront.net/bipedal-walker-20-trial-avg.png" width="80%" alt="training-results">
 </p>
 
 # References
