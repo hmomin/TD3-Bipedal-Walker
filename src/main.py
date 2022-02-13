@@ -17,7 +17,7 @@ render = False       # render out the environment on-screen?
 
 envName = "BipedalWalker-v3"
 
-for trial in range(20):
+for trial in range(64):
     env = gym.make(envName)
     env.name = envName + "_" + str(trial)
     csvName = env.name + '-data.csv'
