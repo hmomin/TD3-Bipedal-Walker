@@ -44,6 +44,10 @@ Below, the average performance over 64 trial runs is documented. The shaded regi
     <img src="https://dr3ngl797z54v.cloudfront.net/bipedal-walker-64-trial-avg.png" width="80%" alt="training-results">
 </p>
 
+Additionally, the relative frequency among all trials of individual episode reward values is shown below through time.
+
+<video src="https://user-images.githubusercontent.com/72412509/153794628-b4837003-d7c7-476c-9d20-202498ff607c.mp4"></video>
+
 # References
 
 - [Continuous Control With Deep Reinforcement Learning - Lillicrap et al.](https://arxiv.org/abs/1509.02971)
