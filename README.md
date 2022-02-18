@@ -46,7 +46,7 @@ Below, the average performance over 64 trial runs is documented. The shaded regi
 
 Additionally, the relative frequency among all trials of individual episode reward values is shown below through time.
 
-<video src="https://user-images.githubusercontent.com/72412509/153794628-b4837003-d7c7-476c-9d20-202498ff607c.mp4"></video>
+https://user-images.githubusercontent.com/72412509/154755506-ae973863-6cb5-455c-b16d-6ad58e9ae39a.mp4
 
 # References
 
