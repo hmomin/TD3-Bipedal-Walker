@@ -3,10 +3,14 @@ import torch as T
 import torch.nn as nn
 import torch.optim as optim
 
+
 class Network(nn.Module):
     def __init__(
-        self, shape: list, outputActivation: Callable, learningRate: float,
-        device: T.device
+        self,
+        shape: list,
+        outputActivation: Callable,
+        learningRate: float,
+        device: T.device,
     ):
         super().__init__()
         # initialize the network
@@ -19,15 +23,15 @@ class Network(nn.Module):
                 layers.append(nn.ReLU())
         layers.append(outputActivation())
         self.network = nn.Sequential(*layers)
-        
+
         self.optimizer = optim.Adam(self.parameters(), lr=learningRate)
         self.device = device
         self.to(self.device)
-    
+
     def forward(self, state: object) -> object:
         return self.network(state)
-    
-    def gradientDescentStep(self, loss: T.Tensor, retainGraph: bool=False):
+
+    def gradientDescentStep(self, loss: T.Tensor, retainGraph: bool = False):
         self.optimizer.zero_grad()
         loss.backward(retain_graph=retainGraph)
         self.optimizer.step()

@@ -4,23 +4,23 @@ from Agent import Agent
 from os import path
 
 # HYPERPARAMETERS BELOW
-gamma = 0.99         # discount factor for rewards
+gamma = 0.99  # discount factor for rewards
 learningRate = 3e-4  # learning rate for actor and critic networks
-tau = 0.005          # tracking parameter used to update target networks slowly
-actionSigma = 0.1    # contributes noise to deterministic policy output
+tau = 0.005  # tracking parameter used to update target networks slowly
+actionSigma = 0.1  # contributes noise to deterministic policy output
 trainingSigma = 0.2  # contributes noise to target actions
-trainingClip = 0.5   # clips target actions to keep them close to true actions
+trainingClip = 0.5  # clips target actions to keep them close to true actions
 miniBatchSize = 100  # how large a mini-batch should be when updating
-policyDelay = 2      # how many steps to wait before updating the policy
-resume = True        # resume from previous checkpoint if possible?
-render = False       # render out the environment on-screen?
+policyDelay = 2  # how many steps to wait before updating the policy
+resume = True  # resume from previous checkpoint if possible?
+render = False  # render out the environment on-screen?
 
 envName = "BipedalWalker-v3"
 
 for trial in range(64):
     env = gym.make(envName)
     env.name = envName + "_" + str(trial)
-    csvName = env.name + '-data.csv'
+    csvName = env.name + "-data.csv"
     agent = Agent(env, learningRate, gamma, tau, resume)
     state = env.reset()
     step = 0
@@ -56,27 +56,27 @@ for trial in range(64):
                 sumRewards += reward
             state = env.reset()
             # keep a running average to see how well we're doing
-            runningReward = sumRewards\
-                if runningReward is None\
-                else runningReward*0.99 + sumRewards*0.01
+            runningReward = (
+                sumRewards
+                if runningReward is None
+                else runningReward * 0.99 + sumRewards * 0.01
+            )
             # log progress in csv file
             fields = [numEpisode, sumRewards, runningReward]
-            with open(env.name + '-data.csv', 'a', newline='') as f:
+            with open(env.name + "-data.csv", "a", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow(fields)
             agent.save()
             # print episode tracking
             print(
-                f"episode {numEpisode:6d} --- " +
-                f"total reward: {sumRewards:7.2f} --- " +
-                f"running average: {runningReward:7.2f}",
-                flush=True
+                f"episode {numEpisode:6d} --- "
+                + f"total reward: {sumRewards:7.2f} --- "
+                + f"running average: {runningReward:7.2f}",
+                flush=True,
             )
         else:
             state = nextState
         step += 1
-        
+
         shouldUpdatePolicy = step % policyDelay == 0
-        agent.update(
-            miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy
-        )
+        agent.update(miniBatchSize, trainingSigma, trainingClip, shouldUpdatePolicy)
