@@ -1,2 +1,8 @@
+# Ignore trial data
+BipedalWalker*.csv
+
+# Ignore checkpoint files
+saved/*
+
 # Ignore all pycache files
 **/__pycache__
