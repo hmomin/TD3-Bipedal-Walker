@@ -28,10 +28,10 @@ class Network(nn.Module):
         self.device = device
         self.to(self.device)
 
-    def forward(self, state: object) -> object:
+    def forward(self, state: T.Tensor) -> T.Tensor:
         return self.network(state)
 
-    def gradientDescentStep(self, loss: T.Tensor, retainGraph: bool = False):
+    def gradientDescentStep(self, loss: T.Tensor, retainGraph: bool = False) -> None:
         self.optimizer.zero_grad()
         loss.backward(retain_graph=retainGraph)
         self.optimizer.step()

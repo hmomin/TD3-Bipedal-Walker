@@ -6,3 +6,6 @@ saved/*
 
 # Ignore all pycache files
 **/__pycache__
+
+# Ignore VS-Code settings
+.vscode

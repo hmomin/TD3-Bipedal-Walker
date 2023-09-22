@@ -32,7 +32,7 @@ class Agent:
         self.buffer = (
             pickle.load(open(name + "Replay", "rb"))
             if shouldLoad and os.path.exists(name + "Replay")
-            else Buffer(self.observationDim, self.actionDim)
+            else Buffer(self.observationDim, self.actionDim, self.device)
         )
         # initialize the actor and critics
         self.actor = (
@@ -101,13 +101,11 @@ class Agent:
         # randomly sample a mini-batch from the replay buffer
         miniBatch = self.buffer.getMiniBatch(miniBatchSize)
         # create tensors to start generating computational graph
-        states = T.tensor(miniBatch["states"], requires_grad=True, device=self.device)
-        actions = T.tensor(miniBatch["actions"], requires_grad=True, device=self.device)
-        rewards = T.tensor(miniBatch["rewards"], requires_grad=True, device=self.device)
-        nextStates = T.tensor(
-            miniBatch["nextStates"], requires_grad=True, device=self.device
-        )
-        dones = T.tensor(miniBatch["doneFlags"], requires_grad=True, device=self.device)
+        states = miniBatch["states"]
+        actions = miniBatch["actions"]
+        rewards = miniBatch["rewards"]
+        nextStates = miniBatch["nextStates"]
+        dones = miniBatch["doneFlags"]
         # compute the targets
         targets = self.computeTargets(
             rewards, nextStates, dones, trainingSigma, trainingClip
@@ -136,12 +134,8 @@ class Agent:
     ) -> T.Tensor:
         targetActions = self.targetActor.forward(nextStates.float())
         # create additive noise for target actions
-        # noise = T.normal(0, trainingSigma, targetActions.shape, device=self.device)
-        noise = np.random.normal(0, trainingSigma, targetActions.shape)
-        # clippedNoise = T.clip(noise, -trainingClip, +trainingClip)
-        clippedNoise = T.tensor(
-            np.clip(noise, -trainingClip, +trainingClip), device=self.device
-        )
+        noise = T.normal(0, trainingSigma, targetActions.shape, device=self.device)
+        clippedNoise = T.clip(noise, -trainingClip, +trainingClip)
         targetActions = T.clip(targetActions + clippedNoise, -1, +1)
         # compute targets
         targetQ1Values = T.squeeze(

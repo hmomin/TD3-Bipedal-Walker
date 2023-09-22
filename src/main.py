@@ -30,7 +30,7 @@ for trial in range(64):
 
     # determine the last episode if we have saved training in progress
     numEpisode = 0
-    if path.exists(csvName):
+    if resume and path.exists(csvName):
         fileData = list(csv.reader(open(csvName)))
         lastLine = fileData[-1]
         numEpisode = int(lastLine[0])
@@ -51,7 +51,7 @@ for trial in range(64):
             print(f"training episode: {elapsed_time} s")
             numEpisode += 1
             # evaluate the deterministic agent on a test episode
-            sumRewards = 0
+            sumRewards = 0.0
             state, info = env.reset()
             terminated = truncated = False
             while not terminated and not truncated:
