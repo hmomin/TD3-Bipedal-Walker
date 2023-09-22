@@ -1,7 +1,8 @@
 import csv
-import gym
+import gymnasium as gym
 from Agent import Agent
 from os import path
+from time import time
 
 # HYPERPARAMETERS BELOW
 gamma = 0.99  # discount factor for rewards
@@ -13,16 +14,17 @@ trainingClip = 0.5  # clips target actions to keep them close to true actions
 miniBatchSize = 100  # how large a mini-batch should be when updating
 policyDelay = 2  # how many steps to wait before updating the policy
 resume = True  # resume from previous checkpoint if possible?
-render = False  # render out the environment on-screen?
+render = True  # render out the environment on-screen?
 
 envName = "BipedalWalker-v3"
 
 for trial in range(64):
-    env = gym.make(envName)
+    renderMode = "human" if render else None
+    env = gym.make(envName, render_mode=renderMode)
     env.name = envName + "_" + str(trial)
     csvName = env.name + "-data.csv"
     agent = Agent(env, learningRate, gamma, tau, resume)
-    state = env.reset()
+    state, info = env.reset()
     step = 0
     runningReward = None
 
@@ -33,28 +35,36 @@ for trial in range(64):
         lastLine = fileData[-1]
         numEpisode = int(lastLine[0])
 
+    start_time = time()
+
     while numEpisode <= 2000:
         # choose an action from the agent's policy
         action = agent.getNoisyAction(state, actionSigma)
         # take a step in the environment and collect information
-        nextState, reward, done, info = env.step(action)
+        nextState, reward, terminated, truncated, info = env.step(action)
         # store data in buffer
-        agent.buffer.store(state, action, reward, nextState, done)
+        agent.buffer.store(state, action, reward, nextState, terminated)
 
-        if done:
+        if terminated or truncated:
+            elapsed_time = time() - start_time
+            start_time = time()
+            print(f"training episode: {elapsed_time} s")
             numEpisode += 1
             # evaluate the deterministic agent on a test episode
             sumRewards = 0
-            state = env.reset()
-            done = False
-            while not done:
+            state, info = env.reset()
+            terminated = truncated = False
+            while not terminated and not truncated:
                 action = agent.getDeterministicAction(state)
-                nextState, reward, done, info = env.step(action)
+                nextState, reward, terminated, truncated, info = env.step(action)
                 if render:
                     env.render()
                 state = nextState
                 sumRewards += reward
-            state = env.reset()
+            elapsed_time = time() - start_time
+            start_time = time()
+            print(f"testing episode: {elapsed_time} s")
+            state, info = env.reset()
             # keep a running average to see how well we're doing
             runningReward = (
                 sumRewards

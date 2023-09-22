@@ -4,7 +4,7 @@ import pickle
 import torch as T
 import torch.nn as nn
 from copy import deepcopy
-from gym.core import Env
+from gymnasium.core import Env
 from Buffer import Buffer
 from Network import Network
 
@@ -136,7 +136,9 @@ class Agent:
     ) -> T.Tensor:
         targetActions = self.targetActor.forward(nextStates.float())
         # create additive noise for target actions
+        # noise = T.normal(0, trainingSigma, targetActions.shape, device=self.device)
         noise = np.random.normal(0, trainingSigma, targetActions.shape)
+        # clippedNoise = T.clip(noise, -trainingClip, +trainingClip)
         clippedNoise = T.tensor(
             np.clip(noise, -trainingClip, +trainingClip), device=self.device
         )

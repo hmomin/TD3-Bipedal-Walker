@@ -6,12 +6,12 @@
 
 This script trains an agent with Twin Delayed DDPG (TD3) to solve the Bipedal Walker challenge from OpenAI.
 
-In order to run this script, [NumPy](https://numpy.org/install/), the [OpenAI Gym toolkit](https://gym.openai.com/docs/), and [PyTorch](https://pytorch.org/get-started/locally/) will need to be installed.
+In order to run this script, [NumPy](https://numpy.org/install/), the [OpenAI Gymnasium toolkit](https://github.com/Farama-Foundation/Gymnasium), and [PyTorch](https://pytorch.org/get-started/locally/) will need to be installed.
 
 Each step through the Bipedal Walker environment takes the general form:
 
 ```python
-state, reward, done, info = env.step(action)
+state, reward, terminated, truncated, info = env.step(action)
 ```
 
 and the goal is for the agent to take actions that maximize the cumulative reward achieved for the episode's duration. In this specific environment, the state and action space are continuous and the state space is 8-dimensional while the action space is 4-dimensional. The state space consists of position and velocity measurements of the walker and its joints, while the action space consists of motor torques that can be applied to the four controllable joints.
